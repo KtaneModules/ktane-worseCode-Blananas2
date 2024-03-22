@@ -14,10 +14,15 @@ MonoBehaviour:
   id: worseCode
   title: Worse Code
   author: Blananas2
-  description: "I really, really hope you like Morse code, Black Hole like input,
-    Twister, keyboard input, a font with beautiful type design, mod setting that will
-    detonate the bomb if you lie, hot chip\u2026\n\nModule by Blananas2\n\nModule
-    ID: worseCode\nThe manual can be found here: https://ktane.timwi.de/HTML/Worse%20Code.html"
+  description: 'U2F5IGdvb2RieWUgdG8gaGVyIGZvciBtZS4g4pml
+
+
+    Module by Blananas2
+
+
+    Module ID: worseCode
+
+    The manual can be found here: https://ktane.timwi.de/HTML/Worse%20Code.html'
   version: 
   outputFolder: build
   previewImage: {fileID: 0}
