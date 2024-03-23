@@ -115,29 +115,32 @@ public class worseCodeScript : MonoBehaviour {
                 if (!assistMode) {
                     if (bet.Contains(detected[d])) {
                         if (Input.GetKeyDown(Keys[bet.IndexOf(detected[d])])) {
+                            Audio.PlaySoundAtTransform("HOLD", transform);
                             heldKeys[d] = true;
                             ButtonLabels[d].color = Colors[3];
                         } else if (Input.GetKeyUp(Keys[bet.IndexOf(detected[d])])) {
+                            Audio.PlaySoundAtTransform("RELEASE", transform);
                             heldKeys[d] = false;
                             ButtonLabels[d].color = Color.white;
                         }
                     }
                 } else {
                     if (Input.GetKeyDown(AssistKeys[d])) {
+                        Audio.PlaySoundAtTransform("HOLD", transform);
                         heldKeys[d] = true;
                         ButtonLabels[d].color = Colors[3];
                     } else if (Input.GetKeyUp(AssistKeys[d])) {
+                        Audio.PlaySoundAtTransform("RELEASE", transform);
                         heldKeys[d] = false;
                         ButtonLabels[d].color = Color.white;
                     }
                 }
             }
         } else {
-
             if (!assistMode) {
-
                 for (int k = 0; k < Keys.Count(); k++) {
                     if (Input.GetKeyDown(Keys[k])) {
+                        Audio.PlaySoundAtTransform("HOLD", transform);
                         if (validLetters.Contains(bet[k])) {
                             heldKeys[validLetters.IndexOf(bet[k])] = true;
                             if (KeyIsValid(validLetters.IndexOf(bet[k]), true)) {
@@ -151,6 +154,7 @@ public class worseCodeScript : MonoBehaviour {
                             StrikeStuff(4);
                         }
                     } else if (Input.GetKeyUp(Keys[k])) {
+                        Audio.PlaySoundAtTransform("RELEASE", transform);
                         if (validLetters.Contains(bet[k])) { //if this weren't here this gives an indexoutofrange i think
                             heldKeys[validLetters.IndexOf(bet[k])] = false;
                             if (KeyIsValid(validLetters.IndexOf(bet[k]), false)) {
@@ -162,11 +166,10 @@ public class worseCodeScript : MonoBehaviour {
                         }
                     }
                 }
-
             } else {
-
                 for (int a = 0; a < AssistKeys.Count(); a++) {
                     if (Input.GetKeyDown(AssistKeys[a])) {
+                        Audio.PlaySoundAtTransform("HOLD", transform);
                         heldKeys[a] = true;
                         if (KeyIsValid(a, true)) {
                             CheckSolve();
@@ -175,6 +178,7 @@ public class worseCodeScript : MonoBehaviour {
                             StrikeStuff(a);
                         }
                     } else if (Input.GetKeyUp(AssistKeys[a])) {
+                        Audio.PlaySoundAtTransform("RELEASE", transform);
                         heldKeys[a] = false;
                         if (KeyIsValid(a, false)) {
                             CheckSolve();
@@ -184,9 +188,7 @@ public class worseCodeScript : MonoBehaviour {
                         }
                     }
                 }
-
             }
-
         }
     }
 
@@ -216,6 +218,7 @@ public class worseCodeScript : MonoBehaviour {
 
     void CheckSolve() {
         if (currentMoment == 13) {
+            Audio.PlaySoundAtTransform("CLEAR", transform);
             Debug.LogFormat("[Worse Code #{0}] Final submission successful. Module solved.", moduleId);
             GetComponent<KMBombModule>().HandlePass();
             moduleSolved = true;
@@ -265,6 +268,7 @@ public class worseCodeScript : MonoBehaviour {
 
     void SubmitPress() {
         if (submissionPhase || heldKeys[0] || heldKeys[1] || heldKeys[2] || heldKeys[3]) { return; }
+        Audio.PlaySoundAtTransform("PRESS", transform);
         Submit.AddInteractionPunch();
         if (moduleSolved) { return; }
         Debug.LogFormat("[Worse Code #{0}] Submitting {1} ({2})", moduleId, MomentString(), detected.Join(""));
@@ -283,6 +287,7 @@ public class worseCodeScript : MonoBehaviour {
     
     void ButtonPress(KMSelectable Button) {
         if (submissionPhase) { return; }
+        Audio.PlaySoundAtTransform("PRESS", transform);
         Button.AddInteractionPunch();
         if (moduleSolved) { return; }
         for (int b = 0; b < 4; b++) {
@@ -305,6 +310,7 @@ public class worseCodeScript : MonoBehaviour {
 
     void MomentToggle(KMSelectable Moment) {
         if (submissionPhase || moduleSolved) { return; }
+        Audio.PlaySoundAtTransform("SELECT", transform);
         for (int m = 0; m < 52; m++) {
             if (Moment == LaneMomentSels[m]) {
                 signalMoments[m/13][m%13] = !signalMoments[m/13][m%13];
@@ -548,7 +554,7 @@ public class worseCodeScript : MonoBehaviour {
 
     void LEDPress() {
         if (submissionPhase || moduleSolved) { return; }
-
+        Audio.PlaySoundAtTransform("PRESS", transform);
         assistMode = !assistMode;
         if (assistMode) {
             for (int l = 0; l < 4; l++) {
