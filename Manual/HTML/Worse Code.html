@@ -41,10 +41,8 @@
                 <img src="img/Component/Worse Code.svg" class="diagram">
                 <h2>On the Subject of Worse Code</h2>
                 <p class="flavour-text">U2F5IGdvb2RieWUgdG8gaGVyIGZvciBtZS4g4pml</p>
-                <div class='notice'>
-                    <b>NOTICE:</b> Due to hardware limitations, you may run into cases where you cannot play the module as intended. The final page will detail how the module can still be played should hardware issues occur.
-                </div>
-                <p>This module consists of four different “lanes” for inputting Morse code sequences, an LED, and a submit button at the top. Your goal is to provide the module with a valid set of four Morse code sequences— one for each letter— and then perform the final submission when you’re ready.</p>
+                <div class='notice'><b>NOTICE:</b> Due to hardware limitations, you may run into cases where you cannot play the module as intended. The final page will detail how the module is still accessible should issues arise, hardware related or otherwise.</div>
+                <p>This module consists of four different “lanes” for inputting Morse code sequences, an LED, and a submit button at the top. Your goal is to provide the module with a valid set of four Morse code sequences— one for each letter— and then perform the final submission when you are ready.</p>
                 <p>A valid set of letters can be determined via the following procedure:</p>
                 <ul>
                     <li>Place an observer at the origin of a coordinate plane.</li>
@@ -76,17 +74,17 @@
                             <li>All Morse code sequences are 13 moments or less.</li>
                             <li>The sequence starts at an odd moment in the lane.</li>
                             <li>All spaces between signal are of length 1 moment.</li>
-                            <li>All signal of the same type are of consistent length 2w+1 moments, where w is an integer. This integer cannot be 0 for dashes.</li>
+                            <li>All signal of the same type are of consistent length 2w+1 moments, where w is an integer. This integer cannot be Ø for dashes.</li>
                             <li>The length of dot signal are less than the length of dash signal.</li>
                             <li>The order and amount of signal types matches that of the corresponding valid letter in International Morse code exactly.</li>
                         </ul>
                     <li>All columns containing a signal in any of the lanes are consecutive.</li>
                 </ul>
-                <p>Pressing on a specific moment of the lane (dragging is also supported) will “toggle” space into signal, or vice versa. The currently detected letter will be shown to the left of the lane. If there’s another valid letter, press the button to change said letter. If no such other letter exists, the module will strike.</p>
+                <p>Pressing on a specific moment of the lane (dragging is also supported) will “toggle” space into signal, or vice versa. The currently detected letter will be shown to the left of the lane. If there is another valid letter, press the button to change said letter. If no such other letter exists, the module will strike.</p>
                 <p>Once all valid letters and Morse code sequences are provided, press the submit button. If upon pressing submit your set of Morse code sequences are invalid, the module will strike immediately. Otherwise, the module is prepared for the final submission. If a strike occurs after this, you must press the button again before retrying.</p>
-                <p>The final submission is performed as follows, using the keys on your keyboard to submit all four of your valid Morse code sequences simultaenously:</p>
+                <p>The final submission is performed as follows, using the keys on your keyboard to submit all four of your valid Morse code sequences simultaneously:</p>
                 <ul>
-                    <li>Start by holding down all keys corresponding to the lanes within the leftmost column containing signal. You will know you’ve done this correctly once the column turns green. Do not release or hold down keys until instructed to do so or the status light changes color. Pressing other keys is also not allowed.</li>
+                    <li>Start by holding down all keys corresponding to the lanes within the leftmost column containing signal. You will know you have done this correctly once the column turns green. Do not release or hold down keys until instructed to do so or the status light changes color. Pressing other keys is also not allowed.</li>
                     <li>In cases of consecutive matching columns, all will turn green.</li>
                     <li>For subsequent columns, if for each key whether they contain signal compared to the previous moment differ, hold down any keys which within this column do contain signal and release any keys which do not contain signal.</li>
                 </ul>
@@ -100,7 +98,7 @@
                 <span class="page-header-section-title">Worse Code</span>
             </div>
             <div class="page-content">
-                <p>The labels of the buttons showing currently detected letters will always turn blue when the module detects the corresponding key being pressed. This can be done before you prepare the module for the final submission.</p>
+                <p>The labels of the buttons showing currently detected letters will turn blue when the module detects the corresponding key being pressed. This can be done before you prepare the module for the final submission.</p>
                 <p>If you discover that is it impossible for your computer to detect the necessary inputs required for the final submission, press the LED to activate assist mode. You will know assist mode is activated when you see that the labels of the buttons in lowercase. You can freely toggle assist mode on and off so long as you have not pressed the submit button.</p>
                 <p>When assist mode is enabled, rather than pressing the keys which correspond to the detected letters, pressing the following four keys correspond to specific lanes the letters are in:</p>
                 <ul>
@@ -109,16 +107,20 @@
                     <li><b>Oscar</b> corresponds to the third lane.</li>
                     <li><b>Papa</b> corresponds to the bottommost lane.</li>
                 </ul>
-                <p>Assist mode will also only take into account the keys chosen for the assist mode, meaning that pressing other keys will no longer yield a strike.</p>
-
+                <p>Via mod settings you can change the four keys listed above to different ones if they do not work for your hardware. The four fields will only accept the codes given below. No two fields can be the same. These fields are not case-sensitive.</p>
                 <table>
-                    <tr><td>ES</td><td colspan="2" style="border-top: hidden;"></td><td>F1</td><td>F2</td><td>F3</td><td>F4</td><td>F5</td><td>F6</td><td>F7</td><td>F8</td><td>F9</td><td>F10</td><td>F11</td><td>F12</td></td><td>SR</td><td>SL</td><td>PA</td></td><td colspan="4" style="border-top: hidden; border-right: hidden;"></td></tr>
-                    <tr><td>BQ</td><td>A1</td><td>A2</td><td>A3</td><td>A4</td><td>A5</td><td>A6</td><td>A7</td><td>A8</td><td>A9</td><td>A0</td><td>MI</td><td>EQ</td><td colspan="2">BS</td><td>IN</td><td>HO</td><td>PU</td><td>NL</td><td>KD</td><td>KMU</td><td>KMI</td></tr>
+                    <tr><td>ES</td><td colspan="2" style="border-top: hidden;"></td><td>F1</td><td>F2</td><td>F3</td><td>F4</td><td>F5</td><td>F6</td><td>F7</td><td>F8</td><td>F9</td><td>F1Ø</td><td>F11</td><td>F12</td></td><td>SR</td><td>SL</td><td>PA</td></td><td colspan="4" style="border-top: hidden; border-right: hidden;"></td></tr>
+                    <tr><td>BQ</td><td>A1</td><td>A2</td><td>A3</td><td>A4</td><td>A5</td><td>A6</td><td>A7</td><td>A8</td><td>A9</td><td>AØ</td><td>MI</td><td>EQ</td><td colspan="2">BS</td><td>IN</td><td>HO</td><td>PU</td><td>NL</td><td>KD</td><td>KMU</td><td>KMI</td></tr>
                     <tr><td colspan="2">TA</td><td>Q</td><td>W</td><td>E</td><td>R</td><td>T</td><td>Y</td><td>U</td><td>I</td><td>O</td><td>P</td><td>LB</td><td>RB</td><td>BH</td><td>DE</td><td>EN</td><td>PD</td><td>K7</td><td>K8</td><td>K9</td><td rowspan="2">KPL</td></tr>
                     <tr><td colspan="2">CL</td><td>A</td><td>S</td><td>D</td><td>F</td><td>G</td><td>H</td><td>J</td><td>K</td><td>L</td><td>SC</td><td>QT</td><td colspan="2">RE</td><td colspan="3"></td><td>K4</td><td>K5</td><td>K6</td></tr>
                     <tr><td colspan="2">LS</td><td>Z</td><td>X</td><td>C</td><td>V</td><td>B</td><td>N</td><td>M</td><td>CM</td><td>PE</td><td>SH</td><td colspan="3">RS</td><td style="border-top: hidden;"></td><td>UA</td><td style="border-top: hidden;"></td><td>K1</td><td>K2</td><td>K3</td><td rowspan="2">KEN</td></tr>
-                    <tr><td>LCT</td><td>LCM</td><td>LAL</td><td colspan="8">SP</td><td>AG</td><td>RCM</td><td>ME</td><td>RCT</td><td>LAR</td><td>DA</td><td>RAR</td><td colspan="2">K0</td><td>KPE</td></tr>
+                    <tr><td>LCT</td><td>LCM</td><td>LAL</td><td colspan="8">SP</td><td>AG</td><td>RCM</td><td>ME</td><td>RCT</td><td>LAR</td><td>DA</td><td>RAR</td><td colspan="2">KØ</td><td>KPE</td></tr>
                 </table>
+                <p>Assist mode will also only take into account the keys chosen for the assist mode, meaning that pressing other keys will no longer yield a strike.</p>
+                <p>Via mod settings you can also determine whether assist mode is enabled on the module by default.</p>
+                <p>Separately, there is a setting to activate toggle mode. You will know toggle mode is activated when letters turn gold on the module when pressed instead of blue.</p>
+                <p>In toggle mode, rather than keys needing to be held down, toggle mode will upon a key press toggle whether the module detects that key as being held or not.</p>
+                <p>You are allowed to have both assist mode and toggle mode active.</p>
             </div>
             <div class="page-footer relative-footer">3</div>
         </div>

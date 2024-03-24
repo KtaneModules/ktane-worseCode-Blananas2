@@ -23,9 +23,8 @@ public class worseCodeScript : MonoBehaviour {
     public Sprite[] Sprites;
     public Color[] Colors;
 
-    float duration = 0.5f;
+    float duration = 0.6f;
     bool assistMode = false;
-    string ass = "QWOP";
     bool holding = false;
     bool submissionPhase = false;
     bool focused = false;
@@ -54,6 +53,11 @@ public class worseCodeScript : MonoBehaviour {
     int finalMoment = 0;
     bool[] heldKeys = { false, false, false, false };
 
+    private WorseCodeSettings Settings = new WorseCodeSettings();
+    bool DefaultAssistState = false;
+    string[] GivenAssists = { "Q", "W", "O", "P" };
+    bool ToggleMode = false;
+
     //Logging
     static int moduleIdCounter = 1;
     int moduleId;
@@ -61,6 +65,40 @@ public class worseCodeScript : MonoBehaviour {
 
     void Awake () {
         moduleId = moduleIdCounter++;
+
+        ModConfig<WorseCodeSettings> modConfig = new ModConfig<WorseCodeSettings>("WorseCodeSettings");
+        Settings = modConfig.Settings;
+        modConfig.Settings = Settings;
+
+        DefaultAssistState = Settings.AssistByDefault;
+        assistMode = DefaultAssistState;
+        Debug.LogFormat("<Worse Code #{0}> Assist mode is {1} by default.", moduleId, assistMode ? "enabled" : "disabled");
+        if (assistMode) {
+            for (int l = 0; l < 4; l++) {
+                ButtonLabelObjs[l].transform.localScale = new Vector3(0.0015f, 0.0015f, 1f);
+            }
+        }
+        GivenAssists[0] = Settings.TopmostLane.ToUpper().Replace("Ø", "0");
+        GivenAssists[1] = Settings.SecondLane.ToUpper().Replace("Ø", "0");
+        GivenAssists[2] = Settings.ThirdLane.ToUpper().Replace("Ø", "0");
+        GivenAssists[3] = Settings.BottommostLane.ToUpper().Replace("Ø", "0");
+        bool v = true;
+        if (GivenAssists[0] == GivenAssists[1] || GivenAssists[0] == GivenAssists[2] || GivenAssists[0] == GivenAssists[3] || GivenAssists[1] == GivenAssists[2] || GivenAssists[1] == GivenAssists[3]  || GivenAssists[2] == GivenAssists[3]) {
+            Debug.LogFormat("<Worse Code #{0}> You are not allowed to have multiple keys be the same.", moduleId);
+            v = false;
+        }
+        if (!KeyNames.Contains(GivenAssists[0]) || !KeyNames.Contains(GivenAssists[1]) || !KeyNames.Contains(GivenAssists[2]) || !KeyNames.Contains(GivenAssists[3])) {
+            Debug.LogFormat("<Worse Code #{0}> You are not allowed to have a code not present in the manual.", moduleId);
+            v = false;
+        }
+        if (v) {
+            for (int a = 0; a < 4; a++) {
+                AssistKeys[a] = AllKeys[Array.IndexOf(KeyNames, GivenAssists[a])];
+            }
+            Debug.LogFormat("<Worse Code #{0}> Assist mode keys chosen: {1}", moduleId, GivenAssists.Join(", "));
+        }
+        ToggleMode = Settings.ToggleAssist;
+        Debug.LogFormat("<Worse Code #{0}> Toggle mode is {1}.", moduleId, ToggleMode ? "enabled" : "disabled");
 
         if (Application.isEditor) { focused = true; }
         ModuleSelectable.OnFocus += delegate () { focused = true; };
@@ -105,7 +143,7 @@ public class worseCodeScript : MonoBehaviour {
         }
         Debug.LogFormat("[Worse Code #{0}] The LED sequence is as follows: {1}", moduleId, fullPath);
         Debug.LogFormat("[Worse Code #{0}] The path the observer took is as follows:\n{1}", moduleId, PrettifyPath());
-        Debug.LogFormat("[Worse Code #{0}] The valid letters from that path are {1}", moduleId, validLetters);
+        Debug.LogFormat("[Worse Code #{0}] The valid letters from that path are: {1}", moduleId, validLetters);
 
         StartCoroutine(LEDPath(fullPath));
     }
@@ -116,77 +154,124 @@ public class worseCodeScript : MonoBehaviour {
             for (int d = 0; d < 4; d++) {
                 if (!assistMode) {
                     if (bet.Contains(detected[d])) {
-                        if (Input.GetKeyDown(Keys[bet.IndexOf(detected[d])])) {
+                        if (!ToggleMode) {
+                            if (Input.GetKeyDown(Keys[bet.IndexOf(detected[d])])) {
+                                Audio.PlaySoundAtTransform("HOLD", transform);
+                                heldKeys[d] = true;
+                                ButtonLabels[d].color = Colors[3];
+                            } else if (Input.GetKeyUp(Keys[bet.IndexOf(detected[d])])) {
+                                Audio.PlaySoundAtTransform("RELEASE", transform);
+                                heldKeys[d] = false;
+                                ButtonLabels[d].color = Color.white;
+                            }
+                        } else {
+                            if (Input.GetKeyDown(Keys[bet.IndexOf(detected[d])])) {
+                                heldKeys[d] = !heldKeys[d];
+                                Audio.PlaySoundAtTransform(heldKeys[d] ? "HOLD" : "RELEASE", transform);
+                                ButtonLabels[d].color = heldKeys[d] ? Colors[4] : Color.white;
+                            }
+                        }
+                    }
+                } else {
+                    if (!ToggleMode) {
+                        if (Input.GetKeyDown(AssistKeys[d])) {
                             Audio.PlaySoundAtTransform("HOLD", transform);
                             heldKeys[d] = true;
                             ButtonLabels[d].color = Colors[3];
-                        } else if (Input.GetKeyUp(Keys[bet.IndexOf(detected[d])])) {
+                        } else if (Input.GetKeyUp(AssistKeys[d])) {
                             Audio.PlaySoundAtTransform("RELEASE", transform);
                             heldKeys[d] = false;
                             ButtonLabels[d].color = Color.white;
                         }
-                    }
-                } else {
-                    if (Input.GetKeyDown(AssistKeys[d])) {
-                        Audio.PlaySoundAtTransform("HOLD", transform);
-                        heldKeys[d] = true;
-                        ButtonLabels[d].color = Colors[3];
-                    } else if (Input.GetKeyUp(AssistKeys[d])) {
-                        Audio.PlaySoundAtTransform("RELEASE", transform);
-                        heldKeys[d] = false;
-                        ButtonLabels[d].color = Color.white;
+                    } else {
+                        if (Input.GetKeyDown(AssistKeys[d])) {
+                            heldKeys[d] = !heldKeys[d];
+                            Audio.PlaySoundAtTransform(heldKeys[d] ? "HOLD" : "RELEASE", transform);
+                            ButtonLabels[d].color = heldKeys[d] ? Colors[4] : Color.white;
+                        }
                     }
                 }
             }
         } else {
             if (!assistMode) {
                 for (int k = 0; k < Keys.Count(); k++) {
-                    if (Input.GetKeyDown(Keys[k])) {
-                        Audio.PlaySoundAtTransform("HOLD", transform);
-                        if (validLetters.Contains(bet[k])) {
-                            heldKeys[validLetters.IndexOf(bet[k])] = true;
-                            if (KeyIsValid(validLetters.IndexOf(bet[k]), true)) {
-                                CheckSolve();
+                    if (!ToggleMode) {
+                        if (Input.GetKeyDown(Keys[k])) {
+                            Audio.PlaySoundAtTransform("HOLD", transform);
+                            if (validLetters.Contains(bet[k])) {
+                                heldKeys[validLetters.IndexOf(bet[k])] = true;
+                                if (KeyIsValid(validLetters.IndexOf(bet[k]), true)) {
+                                    CheckSolve();
+                                } else {
+                                    Debug.LogFormat("[Worse Code #{0}] You held the {1} key at incorrect moment {2}, strike!", moduleId, bet[k], currentMoment+1);
+                                    StrikeStuff(validLetters.IndexOf(bet[k]));
+                                }
                             } else {
-                                Debug.LogFormat("[Worse Code #{0}] You held the {1} key at incorrect moment {2}, strike!", moduleId, bet[k], currentMoment+1);
-                                StrikeStuff(validLetters.IndexOf(bet[k]));
+                                Debug.LogFormat("[Worse Code #{0}] You pushed the {1} key which is not one of the letters, strike!", moduleId, bet[k]);
+                                StrikeStuff(4);
                             }
-                        } else {
-                            Debug.LogFormat("[Worse Code #{0}] You pushed the {1} key which is not one of the letters, strike!", moduleId, bet[k]);
-                            StrikeStuff(4);
+                        } else if (Input.GetKeyUp(Keys[k])) {
+                            Audio.PlaySoundAtTransform("RELEASE", transform);
+                            if (validLetters.Contains(bet[k])) { //if this weren't here this gives an indexoutofrange i think
+                                heldKeys[validLetters.IndexOf(bet[k])] = false;
+                                if (KeyIsValid(validLetters.IndexOf(bet[k]), false)) {
+                                    CheckSolve();
+                                } else {
+                                    Debug.LogFormat("[Worse Code #{0}] You released the {1} key at incorrect moment {2}, strike!", moduleId, bet[k], currentMoment+1);
+                                    StrikeStuff(validLetters.IndexOf(bet[k]));
+                                }
+                            }
                         }
-                    } else if (Input.GetKeyUp(Keys[k])) {
-                        Audio.PlaySoundAtTransform("RELEASE", transform);
-                        if (validLetters.Contains(bet[k])) { //if this weren't here this gives an indexoutofrange i think
-                            heldKeys[validLetters.IndexOf(bet[k])] = false;
-                            if (KeyIsValid(validLetters.IndexOf(bet[k]), false)) {
-                                CheckSolve();
+                    } else {
+                       if (Input.GetKeyDown(Keys[k])) {
+                            if (validLetters.Contains(bet[k])) {
+                                heldKeys[validLetters.IndexOf(bet[k])] = !heldKeys[validLetters.IndexOf(bet[k])];
+                                Audio.PlaySoundAtTransform(heldKeys[validLetters.IndexOf(bet[k])] ? "HOLD" : "RELEASE", transform);
+                                if (KeyIsValid(validLetters.IndexOf(bet[k]), heldKeys[validLetters.IndexOf(bet[k])])) {
+                                    CheckSolve();
+                                } else {
+                                    Debug.LogFormat("[Worse Code #{0}] You {1} the {2} key at incorrect moment {3}, strike!", moduleId, heldKeys[validLetters.IndexOf(bet[k])] ? "held" : "released", bet[k], currentMoment+1);
+                                    StrikeStuff(validLetters.IndexOf(bet[k]));
+                                }
                             } else {
-                                Debug.LogFormat("[Worse Code #{0}] You released the {1} key at incorrect moment {2}, strike!", moduleId, bet[k], currentMoment+1);
-                                StrikeStuff(validLetters.IndexOf(bet[k]));
+                                Debug.LogFormat("[Worse Code #{0}] You pushed the {1} key which is not one of the letters, strike!", moduleId, bet[k]);
+                                StrikeStuff(4);
                             }
                         }
                     }
                 }
             } else {
                 for (int a = 0; a < AssistKeys.Count(); a++) {
-                    if (Input.GetKeyDown(AssistKeys[a])) {
-                        Audio.PlaySoundAtTransform("HOLD", transform);
-                        heldKeys[a] = true;
-                        if (KeyIsValid(a, true)) {
-                            CheckSolve();
-                        } else {
-                            Debug.LogFormat("[Worse Code #{0}] You held the {1} key at incorrect moment {2}, strike!", moduleId, ass[a], currentMoment+1);
-                            StrikeStuff(a);
+                    if (!ToggleMode) {
+                        if (Input.GetKeyDown(AssistKeys[a])) {
+                            Audio.PlaySoundAtTransform("HOLD", transform);
+                            heldKeys[a] = true;
+                            if (KeyIsValid(a, true)) {
+                                CheckSolve();
+                            } else {
+                                Debug.LogFormat("[Worse Code #{0}] You held the {1} key at incorrect moment {2}, strike!", moduleId, GivenAssists[a], currentMoment+1);
+                                StrikeStuff(a);
+                            }
+                        } else if (Input.GetKeyUp(AssistKeys[a])) {
+                            Audio.PlaySoundAtTransform("RELEASE", transform);
+                            heldKeys[a] = false;
+                            if (KeyIsValid(a, false)) {
+                                CheckSolve();
+                            } else {
+                                Debug.LogFormat("[Worse Code #{0}] You released the {1} key at incorrect moment {2}, strike!", moduleId, GivenAssists[a], currentMoment+1);
+                                StrikeStuff(a);
+                            }
                         }
-                    } else if (Input.GetKeyUp(AssistKeys[a])) {
-                        Audio.PlaySoundAtTransform("RELEASE", transform);
-                        heldKeys[a] = false;
-                        if (KeyIsValid(a, false)) {
-                            CheckSolve();
-                        } else {
-                            Debug.LogFormat("[Worse Code #{0}] You released the {1} key at incorrect moment {2}, strike!", moduleId, ass[a], currentMoment+1);
-                            StrikeStuff(a);
+                    } else {
+                        if (Input.GetKeyDown(AssistKeys[a])) {
+                            heldKeys[a] = !heldKeys[a];
+                            Audio.PlaySoundAtTransform(heldKeys[a] ? "HOLD" : "RELEASE", transform);
+                            if (KeyIsValid(a, heldKeys[a])) {
+                                CheckSolve();
+                            } else {
+                                Debug.LogFormat("[Worse Code #{0}] You {1} the {2} key at incorrect moment {3}, strike!", moduleId, heldKeys[a] ? "held" : "released", GivenAssists[a], currentMoment+1);
+                                StrikeStuff(a);
+                            }
                         }
                     }
                 }
@@ -537,7 +622,7 @@ public class worseCodeScript : MonoBehaviour {
     bool KeyIsValid(int x, bool b) {
         if (signalMoments[x][currentMoment] == b) {
             LaneMomentSprs[x*13 + currentMoment].color = Colors[1];
-            ButtonLabels[x].color = b ? Colors[3] : Color.white;
+            ButtonLabels[x].color = b ? Colors[ToggleMode ? 4 : 3] : Color.white;
             while (heldKeys[0] == signalMoments[0][currentMoment] && heldKeys[1] == signalMoments[1][currentMoment] && heldKeys[2] == signalMoments[2][currentMoment] && heldKeys[3] == signalMoments[3][currentMoment]) {
                 LaneMomentSprs[currentMoment].color = Colors[2];
                 LaneMomentSprs[13 + currentMoment].color = Colors[2];
@@ -574,4 +659,55 @@ public class worseCodeScript : MonoBehaviour {
             ButtonLabels[a].color = Color.white;
         }
     }
+
+    class WorseCodeSettings
+    {
+        public bool AssistByDefault = false;
+        public string TopmostLane = "Q";
+        public string SecondLane = "W";
+        public string ThirdLane = "O";
+        public string BottommostLane = "P";
+        public bool ToggleAssist = false;
+    }
+
+    static Dictionary<string, object>[] TweaksEditorSettings = new Dictionary<string, object>[]
+    {
+        new Dictionary<string, object>
+        {
+            { "Filename", "WorseCode.json" },
+            { "Name", "Worse Code Settings" },
+            { "Listing", new List<Dictionary<string, object>>{
+                new Dictionary<string, object>
+                {
+                    { "Key", "AssistByDefault" },
+                    { "Text", "Whether or not assist mode is active by default." }
+                }, 
+                new Dictionary<string, object>
+                {
+                    { "Key", "TopmostLane" },
+                    { "Text", "Key used for the topmost lane." }
+                }, 
+                new Dictionary<string, object>
+                {
+                    { "Key", "SecondLane" },
+                    { "Text", "Key used for the second lane." }
+                }, 
+                new Dictionary<string, object>
+                {
+                    { "Key", "ThirdLane" },
+                    { "Text", "Key used for the third lane." }
+                }, 
+                new Dictionary<string, object>
+                {
+                    { "Key", "BottommostLane" },
+                    { "Text", "Key used for the bottommost lane." }
+                },
+                new Dictionary<string, object>
+                {
+                    { "Key", "ToggleAssist" },
+                    { "Text", "Rather than having to hold keys down, each key acts as a toggle." }
+                }
+            } }
+        }
+    };
 }
