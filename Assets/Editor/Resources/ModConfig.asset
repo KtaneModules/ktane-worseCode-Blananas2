@@ -25,4 +25,4 @@ MonoBehaviour:
     The manual can be found here: https://ktane.timwi.de/HTML/Worse%20Code.html'
   version: 
   outputFolder: build
-  previewImage: {fileID: 0}
+  previewImage: {fileID: 2800000, guid: aca8cc62f41fca44aa99b4e2c7d43dc2, type: 3}
