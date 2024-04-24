@@ -660,6 +660,220 @@ public class worseCodeScript : MonoBehaviour {
         }
     }
 
+    //twitch plays
+    #pragma warning disable 414
+    private readonly string TwitchHelpMessage = @"!{0} lane 2 5 8 13 [Toggles moments 5, 8 and 13 on lane 2] | !{0} lane 3 #-###-###-#-- [Sets all of lane 3 where # is signal and - is space] | !{0} press 1 [Presses the button for lane 1] | !{0} submit [Presses the submit button] | !{0} +BL-AN [Holds the B and L keys and releases the A and N keys]";
+    #pragma warning restore 414
+    IEnumerator ProcessTwitchCommand(string command)
+    {
+        string[] parameters = command.Split(' ');
+        if (parameters.Length == 1)
+        {
+            if (command.EqualsIgnoreCase("submit"))
+            {
+                if (submissionPhase)
+                {
+                    yield return "sendtochaterror You are already in the submission phase!";
+                    yield break;
+                }
+                yield return null;
+                Submit.OnInteract();
+                yield break;
+            }
+            if (!command[0].EqualsAny('+', '-') || command[command.Length - 1].EqualsAny('+', '-'))
+                yield break;
+            bool prevType = false;
+            for (int i = 0; i < command.Length; i++)
+            {
+                if (command[i].EqualsAny('+', '-'))
+                {
+                    if (prevType)
+                        yield break;
+                    prevType = true;
+                }
+                else
+                {
+                    if (!bet.Contains(command[i].ToString().ToUpper()))
+                        yield break;
+                    prevType = false;
+                }
+            }
+            if (!submissionPhase)
+            {
+                yield return "sendtochaterror You cannot hold and release keys while out of the submission phase!";
+                yield break;
+            }
+            yield return null;
+            bool type = false;
+            for (int i = 0; i < command.Length; i++)
+            {
+                if (command[i].Equals('+'))
+                    type = true;
+                else if (command[i].Equals('-'))
+                    type = false;
+                else
+                {
+                    if (type)
+                    {
+                        Audio.PlaySoundAtTransform("HOLD", transform);
+                        if (validLetters.Contains(command[i].ToString().ToUpper()))
+                        {
+                            if (heldKeys[validLetters.IndexOf(command[i].ToString().ToUpper())])
+                            {
+                                Debug.LogFormat("[Worse Code #{0}] You pushed the {1} key which is already being held, strike!", moduleId, command[i].ToString().ToUpper());
+                                StrikeStuff(validLetters.IndexOf(command[i].ToString().ToUpper()));
+                            }
+                            else
+                            {
+                                heldKeys[validLetters.IndexOf(command[i].ToString().ToUpper())] = true;
+                                if (KeyIsValid(validLetters.IndexOf(command[i].ToString().ToUpper()), true))
+                                    CheckSolve();
+                                else
+                                {
+                                    Debug.LogFormat("[Worse Code #{0}] You held the {1} key at incorrect moment {2}, strike!", moduleId, command[i].ToString().ToUpper(), currentMoment + 1);
+                                    StrikeStuff(validLetters.IndexOf(command[i].ToString().ToUpper()));
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Debug.LogFormat("[Worse Code #{0}] You pushed the {1} key which is not one of the letters, strike!", moduleId, command[i].ToString().ToUpper());
+                            StrikeStuff(4);
+                        }
+                        yield return new WaitForSeconds(.1f);
+                    }
+                    else
+                    {
+                        Audio.PlaySoundAtTransform("RELEASE", transform);
+                        if (validLetters.Contains(command[i].ToString().ToUpper()))
+                        {
+                            if (!heldKeys[validLetters.IndexOf(command[i].ToString().ToUpper())])
+                            {
+                                Debug.LogFormat("[Worse Code #{0}] You released the {1} key which is not being held, strike!", moduleId, command[i].ToString().ToUpper());
+                                StrikeStuff(validLetters.IndexOf(command[i].ToString().ToUpper()));
+                            }
+                            else
+                            {
+                                heldKeys[validLetters.IndexOf(command[i].ToString().ToUpper())] = false;
+                                if (KeyIsValid(validLetters.IndexOf(command[i].ToString().ToUpper()), false))
+                                    CheckSolve();
+                                else
+                                {
+                                    Debug.LogFormat("[Worse Code #{0}] You released the {1} key at incorrect moment {2}, strike!", moduleId, command[i].ToString().ToUpper(), currentMoment + 1);
+                                    StrikeStuff(validLetters.IndexOf(command[i].ToString().ToUpper()));
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Debug.LogFormat("[Worse Code #{0}] You released the {1} key which is not one of the letters, strike!", moduleId, command[i].ToString().ToUpper());
+                            StrikeStuff(4);
+                        }
+                        yield return new WaitForSeconds(.1f);
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (parameters[0].EqualsIgnoreCase("lane"))
+            {
+                if (parameters.Length > 3)
+                {
+                    int lane;
+                    if (!int.TryParse(parameters[1], out lane))
+                        yield break;
+                    if (lane < 1 || lane > 4)
+                        yield break;
+                    for (int i = 2; i < parameters.Length; i++)
+                    {
+                        int moment;
+                        if (!int.TryParse(parameters[i], out moment))
+                            yield break;
+                        if (moment < 1 || moment > 13)
+                            yield break;
+                    }
+                    if (submissionPhase)
+                    {
+                        yield return "sendtochaterror You cannot change moments while in the submission phase!";
+                        yield break;
+                    }
+                    yield return null;
+                    for (int i = 2; i < parameters.Length; i++)
+                    {
+                        LaneMomentSels[(13 * (lane - 1)) + int.Parse(parameters[i]) - 1].OnInteract();
+                        LaneMomentSels[(13 * (lane - 1)) + int.Parse(parameters[i]) - 1].OnInteractEnded();
+                        yield return new WaitForSeconds(.1f);
+                    }
+                }
+                else if (parameters.Length == 3)
+                {
+                    int lane;
+                    if (!int.TryParse(parameters[1], out lane))
+                        yield break;
+                    if (lane < 1 || lane > 4)
+                        yield break;
+                    int moment;
+                    if (!int.TryParse(parameters[2], out moment))
+                    {
+                        if (parameters[2].Length != 13)
+                            yield break;
+                        for (int i = 0; i < 13; i++)
+                        {
+                            if (!parameters[2][i].EqualsAny('-', '#'))
+                                yield break;
+                        }
+                        if (submissionPhase)
+                        {
+                            yield return "sendtochaterror You cannot change moments while in the submission phase!";
+                            yield break;
+                        }
+                        yield return null;
+                        for (int i = 0; i < 13; i++)
+                        {
+                            if ((parameters[2][i].Equals('#') && !signalMoments[lane - 1][i]) || (parameters[2][i].Equals('-') && signalMoments[lane - 1][i]))
+                            {
+                                LaneMomentSels[(13 * (lane - 1)) + i].OnInteract();
+                                LaneMomentSels[(13 * (lane - 1)) + i].OnInteractEnded();
+                                yield return new WaitForSeconds(.1f);
+                            }
+                        }
+                        yield break;
+                    }
+                    if (moment < 1 || moment > 13)
+                        yield break;
+                    if (submissionPhase)
+                    {
+                        yield return "sendtochaterror You cannot change moments while in the submission phase!";
+                        yield break;
+                    }
+                    yield return null;
+                    LaneMomentSels[(13 * (lane - 1)) + moment - 1].OnInteract();
+                    LaneMomentSels[(13 * (lane - 1)) + moment - 1].OnInteractEnded();
+                }
+                yield break;
+            }
+            if (parameters[0].EqualsIgnoreCase("press"))
+            {
+                if (parameters.Length == 2)
+                {
+                    int btn;
+                    if (!int.TryParse(parameters[1], out btn))
+                        yield break;
+                    if (btn < 1 || btn > 4)
+                        yield break;
+                    if (submissionPhase)
+                    {
+                        yield return "sendtochaterror You cannot press the lane buttons while in the submission phase!";
+                        yield break;
+                    }
+                    yield return null;
+                    Buttons[btn - 1].OnInteract();
+                }
+            }
+        }
+    }
+
     class WorseCodeSettings
     {
         public bool AssistByDefault = false;
